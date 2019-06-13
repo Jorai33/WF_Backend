@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
 
-    Action : Action,
+    // Action : Action,
     admin_commentaire_document : String,
     admin_commentaire_identite : String,
     admin_notif_tableau_de_bord : String,
