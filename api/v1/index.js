@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const BlogPost = require("../models/blog-post");
-
+const mongoose = require("mongoose");
 
 // localhost:3000/api/v1/ping
 router.get("/ping", (req, res) => {
@@ -55,6 +55,30 @@ router.delete("/blog-posts/:id", (req, res)=> {
 			message : `blog Post with id ${blogPost._id} deleted`
 		});
 	});
+});
+
+// Suppression de plusieurs Blogposts sélectionnés
+router.delete("/blog-posts/", (req, res) => {
+	//  localhost:3000/api/v1/blog-posts/?ids=bjsdbjs,dsdbsd,iqfbfsh
+const ids = req.query.ids;
+console.log("query ids", ids);
+const allIds = ids.split(",").map(id => {
+	if(id.match(/^[0-9a-fA-F]{24}$/)){
+		return mongoose.Types.ObjectId((id));
+	} else {
+		console.log("id is not valid", id);
+	}
+});
+
+const condition = { _id: { $in: allIds}};
+BlogPost.deleteMany(condition, (err, result)=> {
+	if(err){
+		return res.status(500).json(err);
+	}
+	res.status(202).json(result);
+
+});
+
 });
 
 module.exports = router;
