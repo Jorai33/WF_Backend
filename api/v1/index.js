@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const BlogPost = require("../models/blog-post");
 const mongoose = require("mongoose");
+const multer = require("multer");
+const crypto = require("crypto");
+const path = require ("path");
 
 // localhost:3000/api/v1/ping
 router.get("/ping", (req, res) => {
@@ -22,6 +25,34 @@ router.get("/blog-posts", (req, res) => {
 			erreur: err
 		}));
 });
+
+// File Upload configuration (cf doc multer)
+const storage = multer.diskStorage({
+	destination: "./uploads",
+	filename: function(req, file, callback){
+		crypto.pseudoRandomBytes(16, function(err, raw){
+			if (err) return callback(err);
+			callback(null, raw.toString("hex")+ path.extname(file.originalname));
+		});
+	}
+});
+const upload = multer({storage : storage});
+
+
+
+// File Upload
+router.post("/blog-posts/images", upload.single("blogimage"), (req, res) => {
+	if(!req.file.originalname.match(/\.(jpg|jpeg|png|gif)$/)){
+		return res.status(400).json({
+			message: "Seuls les fichiers images sont autorisés"
+		});
+	}
+	res.status(201).send({
+		fileName : req.file.filename,
+		file : req.file
+	});
+});
+
 
 router.post("/blog-posts", (req, res) => {
 	console.log("req.body", req.body);
